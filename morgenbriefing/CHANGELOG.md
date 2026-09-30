@@ -1,5 +1,9 @@
 # Änderungen
 
+## 1.1.2
+- Repo-Eintrag wird bereinigt (auch `https://github.com/Owner/Repo` oder `.git` am Ende ist erlaubt), Anführungszeichen um den Token werden entfernt.
+- Fehlermeldung bei 404 nennt jetzt, ob ein Token eingetragen ist und welches Repo und welcher Branch verwendet wurden.
+
 ## 1.1.1
 - „Jetzt abrufen“ zeigt jetzt das Ergebnis an (neue Ausgabe, keine neuere Ausgabe oder der konkrete Fehler, z. B. Token ungültig) statt nur weiterzuleiten.
 

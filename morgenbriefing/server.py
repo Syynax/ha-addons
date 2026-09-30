@@ -73,10 +73,13 @@ def options():
         data = json.loads(OPTIONS_FILE.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         data = {}
+    repo = str(data.get("github_repo", "")).strip()
+    repo = re.sub(r"^(https?://)?(www\.)?github\.com/", "", repo, flags=re.I)
+    repo = re.sub(r"\.git$", "", repo.strip("/"), flags=re.I)
     return {
-        "repo": str(data.get("github_repo", "")).strip().strip("/"),
+        "repo": repo,
         "branch": str(data.get("github_branch", "main")).strip() or "main",
-        "token": str(data.get("github_token", "")).strip(),
+        "token": str(data.get("github_token", "")).strip().strip("\"'"),
         "poll": max(5, int(data.get("poll_minutes", 15) or 15)),
         "lan": bool(data.get("lan_access", True)),
     }
@@ -235,7 +238,11 @@ def sync():
         except urllib.error.HTTPError as err:
             hint = {401: "Token ungültig oder abgelaufen.",
                     403: "Zugriff verweigert oder Rate-Limit erreicht.",
-                    404: "Repo oder latest.html nicht gefunden (Name, Branch, Token-Rechte prüfen)."
+                    404: ("Repo oder latest.html nicht gefunden. "
+                          + ("Es ist KEIN Token eingetragen, das Repo ist privat. "
+                             if not opt["token"] else
+                             "Token vorhanden, aber ohne Zugriff auf dieses Repo (Repository access und Contents: Read prüfen). ")
+                          + f"Verwendet: {opt['repo']}, Branch {opt['branch']}.")
                     }.get(err.code, f"HTTP {err.code}")
             STATE["last_error"] = f"GitHub: {hint}"
             log(STATE["last_error"])
