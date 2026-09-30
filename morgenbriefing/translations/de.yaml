@@ -1,0 +1,13 @@
+configuration:
+  github_repo:
+    name: GitHub-Repo mit den Ausgaben
+    description: Im Format besitzer/repo, z. B. Syynax/morgenbriefing-daten.
+  github_branch:
+    name: Branch
+    description: Standard ist main.
+  github_token:
+    name: GitHub-Token (nur Lesezugriff)
+    description: Fine-grained Token mit Nur-Lese-Recht "Contents" auf das Daten-Repo. Bei öffentlichem Repo leer lassen.
+  poll_minutes:
+    name: Abrufintervall in Minuten
+    description: Wie oft nach einer neuen Ausgabe gesucht wird (5 bis 1440).
