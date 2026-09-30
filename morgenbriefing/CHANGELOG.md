@@ -1,5 +1,8 @@
 # Änderungen
 
+## 1.1.1
+- „Jetzt abrufen“ zeigt jetzt das Ergebnis an (neue Ausgabe, keine neuere Ausgabe oder der konkrete Fehler, z. B. Token ungültig) statt nur weiterzuleiten.
+
 ## 1.1.0
 - Fehler behoben: Links in der Seitenleiste (Archiv, Jetzt abrufen) lieferten Fehler 401, weil die CSP-Sandbox die Ingress-Cookies abschnitt. Skripte bleiben weiterhin per CSP verboten.
 - Neu: direkter Zugriff im Heimnetz ohne Home Assistant über `http://HA-IP:8099` (Option `lan_access`, nur private Adressen).

@@ -1,5 +1,5 @@
 name: Morgenbriefing
-version: "1.1.0"
+version: "1.1.1"
 slug: morgenbriefing
 description: Zeigt das tägliche Morgenbriefing (HTML-Zeitung) aus einem GitHub-Repo in der Seitenleiste.
 url: https://github.com/Syynax/ha-addons

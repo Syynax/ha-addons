@@ -351,10 +351,20 @@ class Handler(BaseHTTPRequestHandler):
                 return self.edition(segs[1])
             if head == "aktualisieren":
                 now = time.time()
-                if now - LAST_MANUAL["t"] >= MANUAL_COOLDOWN:
+                if now - LAST_MANUAL["t"] < MANUAL_COOLDOWN:
+                    msg = "<p>Der letzte Abruf ist erst wenige Sekunden her. Bitte kurz warten.</p>"
+                else:
                     LAST_MANUAL["t"] = now
-                    sync()
-                return self.send(303, b"", extra={"Location": "./"})
+                    new = sync()
+                    if STATE.get("last_error"):
+                        msg = f"<p><strong>Abruf fehlgeschlagen.</strong> {escape(STATE['last_error'])}</p>"
+                    elif new:
+                        msg = "<p><strong>Neue Ausgabe geladen.</strong></p>"
+                    else:
+                        msg = "<p><strong>Kein Fehler.</strong> Es gibt keine neuere Ausgabe als die angezeigte.</p>"
+                ed = STATE.get("edition")
+                back = '<p><a href="./">Zur aktuellen Ausgabe</a></p>' if ed else ""
+                return self.send(200, shell_page("Abruf", f"<h1>Abruf</h1>{msg}{status_line()}{back}"))
             if head == "status":
                 data = dict(STATE)
                 data.pop("etags", None)
