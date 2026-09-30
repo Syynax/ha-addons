@@ -18,6 +18,11 @@ das Add-on holt sie von dort ab.
    - `poll_minutes`: 15
 4. Starten. „Morgenbriefing" erscheint in der Seitenleiste.
 
+## Aufruf ohne Home Assistant
+
+Im Heimnetz ist die Seite direkt erreichbar: `http://<IP-von-Home-Assistant>:8099`, z. B. am Handy
+oder Laptop. Praktisch als Lesezeichen oder Startbildschirm-Verknüpfung.
+
 ## Aufbau des Daten-Repos
 
 ```
@@ -52,9 +57,11 @@ automation:
 
 ## Sicherheit
 
-- Die Seite wird mit Content-Security-Policy ausgeliefert: **keine Skripte**, Sandbox ohne Zugriff
-  auf Home Assistant. Bilder und Schriften werden nur über https geladen.
-- Das Add-on ist nur über die Home-Assistant-Oberfläche (Ingress) erreichbar, nicht direkt im Netz.
+- Die Seite wird mit Content-Security-Policy ausgeliefert: **keine Skripte**, keine Frames, keine
+  Formulare, keine Verbindungen nach außen. Bilder und Schriften werden nur über https geladen.
+- Direkter Zugriff (Port 8099) ist nur aus privaten Adressen (Heimnetz) möglich und ohne Passwort.
+  Wer im Heimnetz ist, kann die Seite lesen. Den Port nicht im Router ins Internet freigeben.
+  Abschalten: Option `lan_access` auf `false` (und den Port unter „Netzwerk“ leeren).
 - Der Token braucht nur Lesezugriff auf das Daten-Repo.
 
 ## Fehlersuche

@@ -5,6 +5,7 @@ Holt die tägliche Ausgabe (latest.html, summary.txt, archive/*.html) aus einem
 GitHub-Repo, legt sie lokal in /data/cache ab und liefert sie über Ingress aus.
 """
 import hashlib
+import ipaddress
 import json
 import os
 import re
@@ -32,17 +33,33 @@ KEEP = 60  # so viele Archiv-Ausgaben bleiben lokal gespeichert
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 ARCHIVE_NAME_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})\.html$")
 
-# Die Seite stammt aus KI-Recherche im Web: Skripte sind ausgeschaltet und das
-# Dokument läuft in einer Sandbox ohne Zugriff auf den Origin von Home Assistant.
+# Die Seite stammt aus KI-Recherche im Web: Skripte, Frames, Formulare und
+# Verbindungen sind per CSP verboten, es werden nur Bilder, Stile und Schriften
+# über https geladen. (Kein CSP-"sandbox": das schneidet bei Ingress die Cookies
+# ab, dann lehnt Home Assistant Folgeaufrufe mit 401 ab.)
 CSP = (
     "default-src 'none'; img-src https: data:; "
     "style-src 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src https://fonts.gstatic.com data:; script-src 'none'; "
-    "base-uri 'none'; form-action 'none'; frame-ancestors 'self'; "
-    "sandbox allow-popups allow-popups-to-escape-sandbox"
+    "base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
 )
 
 LOCK = threading.Lock()
+LAST_MANUAL = {"t": 0.0}
+MANUAL_COOLDOWN = 30  # Sekunden zwischen manuellen Abrufen
+
+
+def client_allowed(addr):
+    """Ingress-Gateway und localhost immer; Heimnetz (private IPs) nur mit lan_access."""
+    if addr in ALLOWED:
+        return True
+    if not options()["lan"]:
+        return False
+    try:
+        ip = ipaddress.ip_address(addr.split("%")[0])
+    except ValueError:
+        return False
+    return (ip.is_private and not ip.is_loopback) or ip.is_link_local
 STATE = {"etags": {}, "last_check": None, "last_ok": None, "last_error": None,
          "edition": None, "hash": None}
 
@@ -61,6 +78,7 @@ def options():
         "branch": str(data.get("github_branch", "main")).strip() or "main",
         "token": str(data.get("github_token", "")).strip(),
         "poll": max(5, int(data.get("poll_minutes", 15) or 15)),
+        "lan": bool(data.get("lan_access", True)),
     }
 
 
@@ -319,7 +337,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        if self.client_address[0] not in ALLOWED:
+        if not client_allowed(self.client_address[0]):
             return self.send(403, b"Forbidden", "text/plain; charset=utf-8")
         path = urllib.parse.urlsplit(self.path).path
         segs = [s for s in path.split("/") if s]
@@ -332,7 +350,10 @@ class Handler(BaseHTTPRequestHandler):
             if head == "ausgabe" and len(segs) == 2 and DATE_RE.match(segs[1]):
                 return self.edition(segs[1])
             if head == "aktualisieren":
-                sync()
+                now = time.time()
+                if now - LAST_MANUAL["t"] >= MANUAL_COOLDOWN:
+                    LAST_MANUAL["t"] = now
+                    sync()
                 return self.send(303, b"", extra={"Location": "./"})
             if head == "status":
                 data = dict(STATE)

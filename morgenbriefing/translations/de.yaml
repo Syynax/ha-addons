@@ -11,3 +11,8 @@ configuration:
   poll_minutes:
     name: Abrufintervall in Minuten
     description: Wie oft nach einer neuen Ausgabe gesucht wird (5 bis 1440).
+  lan_access:
+    name: Zugriff im Heimnetz erlauben
+    description: Erlaubt den direkten Aufruf im lokalen Netzwerk über http://HA-IP:8099, ohne Home Assistant. Nur private Adressen (Heimnetz) werden zugelassen.
+network:
+  8099/tcp: Direkter Zugriff im Heimnetz (Webseite)

@@ -1,5 +1,5 @@
 name: Morgenbriefing
-version: "1.0.0"
+version: "1.1.0"
 slug: morgenbriefing
 description: Zeigt das tägliche Morgenbriefing (HTML-Zeitung) aus einem GitHub-Repo in der Seitenleiste.
 url: https://github.com/Syynax/ha-addons
@@ -15,13 +15,19 @@ panel_icon: mdi:newspaper-variant-outline
 panel_title: Morgenbriefing
 panel_admin: false
 homeassistant_api: true
+ports:
+  8099/tcp: 8099
+ports_description:
+  8099/tcp: Direkter Zugriff im Heimnetz ohne Home Assistant (http://HA-IP:8099)
 options:
   github_repo: ""
   github_branch: main
   github_token: ""
   poll_minutes: 15
+  lan_access: true
 schema:
   github_repo: str
   github_branch: str
   github_token: password?
   poll_minutes: int(5,1440)
+  lan_access: bool
